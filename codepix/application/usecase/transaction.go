@@ -12,20 +12,23 @@ type TransactionUseCase struct {
 	PixKeyRepository      model.PixKeyRepositoryInterface
 }
 
-func NewTransactionUseCase(transactionRepository model.TransactionRepositoryInterface, pixKeyRepository model.PixKeyRepositoryInterface) *TransactionUseCase {
+func NewTransactionUseCase(
+	transactionRepository model.TransactionRepositoryInterface, 
+	pixKeyRepository model.PixKeyRepositoryInterface,
+) *TransactionUseCase {
 	return &TransactionUseCase{
 		TransactionRepository: transactionRepository,
 		PixKeyRepository:      pixKeyRepository,
 	}
 }
 
-func (t *TransactionUseCase) Register(accountId string, amount float64, pixKeyTo string, pixKeyKindTo string, description string) (*model.Transaction, error) {
-	account, err := t.PixKeyRepository.FindAccount(accountId)
+func (uc *TransactionUseCase) Register(accountId string, amount float64, pixKeyTo string, pixKeyKindTo string, description string) (*model.Transaction, error) {
+	account, err := uc.PixKeyRepository.FindAccount(accountId)
 	if err != nil {
 		return nil, err
 	}
 
-	pixKey, err := t.PixKeyRepository.FindKeyByKind(pixKeyTo, pixKeyKindTo)
+	pixKey, err := uc.PixKeyRepository.FindKeyByKind(pixKeyTo, pixKeyKindTo)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +38,7 @@ func (t *TransactionUseCase) Register(accountId string, amount float64, pixKeyTo
 		return nil, err
 	}
 
-	t.TransactionRepository.Save(transaction)
+	uc.TransactionRepository.Save(transaction)
 	if transaction.ID == "" {
 		return nil, errors.New("unable to process register this transaction at the moment")
 	}
@@ -43,15 +46,15 @@ func (t *TransactionUseCase) Register(accountId string, amount float64, pixKeyTo
 	return transaction, nil
 }
 
-func (t *TransactionUseCase) Confirm(transactionId string) (*model.Transaction, error) {
-	transaction, err := t.TransactionRepository.Find(transactionId)
+func (uc *TransactionUseCase) Confirm(transactionId string) (*model.Transaction, error) {
+	transaction, err := uc.TransactionRepository.Find(transactionId)
 	if err != nil {
 		log.Println("Transaction not found", transactionId)
 		return nil, err
 	}
 
 	transaction.Status = model.TransactionConfirmed
-	err = t.TransactionRepository.Save(transaction)
+	err = uc.TransactionRepository.Save(transaction)
 	if err != nil {
 		return nil, err
 	}
@@ -59,15 +62,15 @@ func (t *TransactionUseCase) Confirm(transactionId string) (*model.Transaction, 
 	return transaction, nil
 }
 
-func (t *TransactionUseCase) Complete(transactionId string) (*model.Transaction, error) {
-	transaction, err := t.TransactionRepository.Find(transactionId)
+func (uc *TransactionUseCase) Complete(transactionId string) (*model.Transaction, error) {
+	transaction, err := uc.TransactionRepository.Find(transactionId)
 	if err != nil {
 		log.Println("Transaction not found", transactionId)
 		return nil, err
 	}
 
 	transaction.Status = model.TransactionCompleted
-	err = t.TransactionRepository.Save(transaction)
+	err = uc.TransactionRepository.Save(transaction)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +78,8 @@ func (t *TransactionUseCase) Complete(transactionId string) (*model.Transaction,
 	return transaction, nil
 }
 
-func (t *TransactionUseCase) Error(transactionId string, reason string) (*model.Transaction, error) {
-	transaction, err := t.TransactionRepository.Find(transactionId)
+func (uc *TransactionUseCase) Error(transactionId string, reason string) (*model.Transaction, error) {
+	transaction, err := uc.TransactionRepository.Find(transactionId)
 	if err != nil {
 		log.Println("Transaction not found", transactionId)
 		return nil, err
@@ -84,7 +87,7 @@ func (t *TransactionUseCase) Error(transactionId string, reason string) (*model.
 
 	transaction.Status = model.TransactionError
 	transaction.CancelDescription = reason
-	err = t.TransactionRepository.Save(transaction)
+	err = uc.TransactionRepository.Save(transaction)
 	if err != nil {
 		return nil, err
 	}

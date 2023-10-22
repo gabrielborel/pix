@@ -14,8 +14,8 @@ func NewPixKeyUseCase(repository model.PixKeyRepositoryInterface) *PixKeyUseCase
 	return &PixKeyUseCase{PixKeyRepository: repository}
 }
 
-func (r *PixKeyUseCase) RegisterKey(key, kind, accountId string) (*model.PixKey, error) {
-	account, err := r.PixKeyRepository.FindAccount(accountId)
+func (uc *PixKeyUseCase) RegisterKey(key, kind, accountId string) (*model.PixKey, error) {
+	account, err := uc.PixKeyRepository.FindAccount(accountId)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func (r *PixKeyUseCase) RegisterKey(key, kind, accountId string) (*model.PixKey,
 		return nil, err
 	}
 
-	r.PixKeyRepository.RegisterKey(pixKey)
+	uc.PixKeyRepository.RegisterKey(pixKey)
 	if pixKey.ID == "" {
 		return nil, errors.New("unable to create new key at the moment")
 	}
@@ -33,8 +33,8 @@ func (r *PixKeyUseCase) RegisterKey(key, kind, accountId string) (*model.PixKey,
 	return pixKey, nil
 }
 
-func (r *PixKeyUseCase) FindKey(key, kind string) (*model.PixKey, error) {
-	pixKey, err := r.PixKeyRepository.FindKeyByKind(key, kind)
+func (uc *PixKeyUseCase) FindKey(key, kind string) (*model.PixKey, error) {
+	pixKey, err := uc.PixKeyRepository.FindKeyByKind(key, kind)
 	if err != nil {
 		return nil, err
 	}
