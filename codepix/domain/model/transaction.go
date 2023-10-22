@@ -23,12 +23,14 @@ type Transactions struct {
 
 type Transaction struct {
 	BaseModel         `valid:"required"`
-	AccountFrom       *Account `valid:"-"`
-	Amount            float64  `json:"amount" valid:"notnull"`
-	PixKeyTo          *PixKey  `valid:"-"`
-	Status            string   `json:"status" valid:"notnull"`
-	Description       string   `json:"description" valid:"notnull"`
-	CancelDescription string   `json:"cancel_description" valid:"-"`
+	AccountFrom       *Account `valid:"-" gorm:"ForeignKey:AccountFromID"`
+	AccountFromID     string   `gorm:"column:account_from_id;type:uuid;" valid:"notnull"`
+	Amount            float64  `json:"amount" valid:"notnull" gorm:"type:float"`
+	PixKeyTo          *PixKey  `valid:"-" gorm:"ForeignKey:PixKeyToID"`
+	PixKeyToID        string   `gorm:"column:pix_key_to_id;type:uuid;" valid:"notnull"`
+	Status            string   `json:"status" valid:"notnull" gorm:"type:varchar(20)"`
+	Description       string   `json:"description" valid:"notnull" gorm:"type:varchar(255)"`
+	CancelDescription string   `json:"cancel_description" valid:"-" gorm:"type:varchar(255)"`
 }
 
 type TransactionRepositoryInterface interface {
@@ -39,11 +41,13 @@ type TransactionRepositoryInterface interface {
 
 func NewTransaction(accountFrom *Account, amount float64, pixKeyTo *PixKey, description string) (*Transaction, error) {
 	transaction := Transaction{
-		AccountFrom: accountFrom,
-		Amount:      amount,
-		PixKeyTo:    pixKeyTo,
-		Status:      TransactionPending,
-		Description: description,
+		AccountFrom:   accountFrom,
+		AccountFromID: accountFrom.ID,
+		Amount:        amount,
+		PixKeyTo:      pixKeyTo,
+		PixKeyToID:    pixKeyTo.ID,
+		Status:        TransactionPending,
+		Description:   description,
 	}
 
 	transaction.ID = uuid.NewV4().String()

@@ -9,16 +9,18 @@ import (
 
 type Account struct {
 	BaseModel `valid:"required"`
-	OwnerName string    `json:"owner_name" valid:"notnull"`
-	Bank      *Bank     `valid:"-"`
-	Number    string    `json:"number" valid:"notnull"`
-	PixKeys   []*PixKey `valid:"-"`
+	OwnerName string    `json:"owner_name" valid:"notnull" gorm:"column:owner_name;type:varchar(255);not null"`
+	Bank      *Bank     `valid:"-" gorm:"ForeignKey:BankID"`
+	BankID    string    `valid:"-" gorm:"column:bank_id;type:uuid;not null"`
+	Number    string    `json:"number" valid:"notnull" gorm:"type:varchar(20)"`
+	PixKeys   []*PixKey `valid:"-" gorm:"ForeignKey:AccountID"`
 }
 
 func NewAccount(ownerName, number string, bank *Bank) (*Account, error) {
 	account := Account{
 		OwnerName: ownerName,
 		Bank:      bank,
+		BankID:    bank.ID,
 		Number:    number,
 	}
 
